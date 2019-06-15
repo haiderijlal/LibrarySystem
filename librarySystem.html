@@ -1,0 +1,95 @@
+<script src="SimpleTest.js"></script>
+<script src="librarySystem.js"></script>
+
+
+<!-- function signature
+librarySystem(libraryName[, dependencies[, callback]])  
+-->
+
+<script>
+    tests({
+
+    'If arguments.length > 1 and second argument is not an array, It should throw type error.': function() {
+        try {
+            librarySystem('library1', '', function(){return "Ijlal"});
+        } catch (error) {
+            isTypeError = (error instanceof TypeError);
+        }
+        eq(isTypeError, true)
+    },
+
+    'If arguments.length > 1 and third argument is not a function, It should throw type error.': function() {
+        try {
+            librarySystem('library1', [], {name: "Ijlal"});
+        } catch (error) {
+            isTypeError = (error instanceof TypeError);
+        }
+        eq(isTypeError, true)
+    },
+    
+    'If arguments.length > 1, It should set "libraryName" as a property of "libraryStorage"': function() {
+    
+        librarySystem('library1', [], function(){return "Ijlal"});
+        eq(libraryStorage.hasOwnProperty('library1'), true)
+    },
+
+    'If arguments.length == 1, It should return the library of the same name.': function() {
+        var libraryfromLibraryStorage = librarySystem('library1');
+        eq(libraryStorage['library1'], libraryfromLibraryStorage)
+    },
+
+    
+    'It should call the callback only once for each library': function() {
+        var numberOfTimesCallbackCalled = 0
+        librarySystem('library1', [], function(){
+            numberOfTimesCallbackCalled++
+            return "Ijlal"});
+        var libraryfromLibraryStorage1 = librarySystem('library1');
+        var libraryfromLibraryStorage2 = librarySystem('library1');
+        var libraryfromLibraryStorage3 = librarySystem('library1');
+        eq(numberOfTimesCallbackCalled, 1)
+    },
+    
+    'It should be able to create library before the dependencies': function() {
+
+        librarySystem('workBlurb', ['name', 'company'], function(name, company) {
+            return name + ' works at ' + company;
+        });
+
+        librarySystem('name', [], function() {
+            return 'Gordon';
+        });
+
+        librarySystem('company', [], function() {
+            return 'Watch and Code';
+        });
+
+        var workBlurbLibrary = librarySystem('workBlurb');
+        eq(workBlurbLibrary, 'Gordon works at Watch and Code')
+    },
+  
+    'It should be able to handle library with nested dependencies': function() {
+
+        librarySystem('learningJS', ['name', 'course'], function(name, course) {
+        return name + ' learns at ' + course;
+        });
+
+        librarySystem('name', ['surname'], function(surname) {
+        return 'Ijlal' + ' ' + surname;
+        });
+
+        librarySystem('course', [], function() {
+        return 'Watch and Code';
+        });
+
+        librarySystem('surname', [], function() {
+        return 'Haider';
+        });
+
+        var learningJSLibrary = librarySystem('learningJS');
+        eq(learningJSLibrary, 'Ijlal Haider learns at Watch and Code')
+    }
+    
+    
+});
+</script>
